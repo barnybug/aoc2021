@@ -7,9 +7,10 @@ proc increases(ns: seq[int], stride: int): int =
         if ns[i+stride] > ns[i]:
             inc result
 
-proc solve: Answer =
+proc solve*: Answer =
     result.part1 = increases(numbers, 1)
     # Each sum of threes has the 1st and 2nd in common with the next threes, so only necessary to compare 0th and 3rd
     result.part2 = increases(numbers, 3)
 
-echo solve()
+when isMainModule:
+    echo solve()
