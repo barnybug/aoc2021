@@ -17,4 +17,8 @@ jobs:
       - uses: jiro4989/setup-nim-action@v1
         with:
           nim-version: '1.4.x'
-      - run: nimble run -Y
+      - run: nimble build -Y
+      - run: nimble test -Y
+      - run: |
+          nimble install -Y
+          ./aoc2021
