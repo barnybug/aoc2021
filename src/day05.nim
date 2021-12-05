@@ -16,10 +16,7 @@ proc partn(input: string, part: int): int =
         let ys = if y1 == y2: repeat(y1, abs(x1-x2)+1) else: count(y1, y2)
         for (x, y) in zip(xs, ys):
             grid.inc (x, y)
-
-    for count in grid.values:
-        if count > 1:
-            inc result
+    result = countIt(grid.values, it > 1)
 
 proc solve*(input: string): Answer =
     result.part1 = partn(input, 1)
