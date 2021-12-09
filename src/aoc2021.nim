@@ -1,5 +1,5 @@
 import algorithm, common, os, sequtils, strformat, strutils, tables
-import day01, day02, day03, day04, day05, day06, day06, day06, day07, day08
+import day01, day02, day03, day04, day05, day06, day06, day06, day07, day08, day09
 
 var SOLUTIONS*: Table[int, proc (input: string): Answer]
 
@@ -11,12 +11,15 @@ SOLUTIONS[5] = day05.solve
 SOLUTIONS[6] = day06.solve
 SOLUTIONS[7] = day07.solve
 SOLUTIONS[8] = day08.solve
+SOLUTIONS[9] = day09.solve
 SOLUTIONS[6] = day06.solve
 SOLUTIONS[7] = day07.solve
 SOLUTIONS[8] = day08.solve
+SOLUTIONS[9] = day09.solve
 SOLUTIONS[6] = day06.solve
 SOLUTIONS[7] = day07.solve
 SOLUTIONS[8] = day08.solve
+SOLUTIONS[9] = day09.solve
 
 when isMainModule:
   let params = os.commandLineParams()
