@@ -1,23 +1,19 @@
-import common, sequtils, strscans, tables
+import common, math, sequtils, strscans
 
-type Point = tuple[x, y: int]
-
-proc count(a, b: int): seq[int] =
-    if a < b: toSeq(countup(a, b)) else: toSeq(countdown(a, b))
-
-proc partn(input: string, part: int): int =
-    var grid: CountTable[Point]
+proc solve*(input: string): Answer =
+    var grid1 = newSeq[uint8](1000*1000)
+    var grid2 = newSeq[uint8](1000*1000)
     for line in lines input:
         var x1, x2, y1, y2: int
         assert line.scanf("$i,$i -> $i,$i", x1, y1, x2, y2)
-        if x1 != x2 and y1 != y2 and part == 1:
-            continue
-        let xs = if x1 == x2: repeat(x1, abs(y1-y2)+1) else: count(x1, x2)
-        let ys = if y1 == y2: repeat(y1, abs(x1-x2)+1) else: count(y1, y2)
-        for (x, y) in zip(xs, ys):
-            grid.inc (x, y)
-    result = countIt(grid.values, it > 1)
+        var p = x1 + y1*1000
+        let dp = sgn(x2-x1) + sgn(y2-y1)*1000
+        let steps = max(abs(y1-y2), abs(x1-x2))
+        for i in 0..steps:
+            if x1 == x2 or y1 == y2:
+                inc grid1[p]
+            inc grid2[p]
+            p += dp
 
-proc solve*(input: string): Answer =
-    result.part1 = partn(input, 1)
-    result.part2 = partn(input, 2)
+    result.part1 = countIt(grid1, it > 1)
+    result.part2 = countIt(grid2, it > 1)
