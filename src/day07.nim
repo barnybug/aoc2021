@@ -1,19 +1,18 @@
-import common, math, sequtils
+import algorithm, common, math, sequtils
 
-proc best(numbers: seq[int], costfn: proc(a, b: int): int): int =
+proc best(numbers: seq[int]): int =
     var costs: seq[int]
-    for i in min(numbers)..max(numbers):
-        let cost = numbers.mapIt(costfn(it, i)).sum
+    for i in numbers[0]..numbers[^1]:
+        var cost = 0
+        for b in numbers:
+            let x = abs(b-i)
+            cost += x*(x+1) div 2
         costs.add(cost)
     return min(costs)
 
-proc difference(a, b: int): int = abs(a-b)
-
-proc triangular(a, b: int): int =
-    let i = abs(a-b)
-    return i*(i+1) div 2
-
 proc solve*(input: string): Answer =
-    let numbers = parseIntList(readFile input)
-    result.part1 = best(numbers, difference)
-    result.part2 = best(numbers, triangular)
+    var numbers = parseIntList(readFile input)
+    numbers.sort
+    let median = numbers[numbers.len div 2]
+    result.part1 = numbers.mapIt(abs(it-median)).sum
+    result.part2 = best(numbers)
