@@ -1,4 +1,4 @@
-import algorithm, common, os, sequtils, strformat, strutils, tables
+import algorithm, common, os, sequtils, strformat, strutils, tables, times
 import day01, day02, day03, day04, day05, day06, day06, day06, day07, day08, day09, day10, day11, day12, day13
 
 var SOLUTIONS*: Table[int, proc (input: string): Answer]
@@ -44,4 +44,9 @@ when isMainModule:
   for day in days:
     echo fmt"Day {day}:"
     let input = fmt"input{day:02}.txt"
-    echo SOLUTIONS[day](input)
+    let start = cpuTime()
+    let result = SOLUTIONS[day](input)
+    let finish = cpuTime()
+    echo result
+    let took = (finish-start)*1000
+    echo fmt" Time: {took:.2} ms"
