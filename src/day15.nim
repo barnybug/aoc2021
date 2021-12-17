@@ -3,9 +3,9 @@ import common, deques, sequtils, strformat
 type Point = (int, int)
 
 proc compute(risks: seq[seq[uint8]]): int =
-    var best: seq[seq[int]]
+    var best: seq[seq[uint16]]
     for y in 0..risks.high:
-        best.add repeat(9999, risks.len)
+        best.add repeat(9999'u16, risks.len)
 
     let size = risks.len
     best[0][0] = 0
@@ -16,12 +16,12 @@ proc compute(risks: seq[seq[uint8]]): int =
         for (dx, dy) in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
             let (nx, ny) = (x+dx, y+dy)
             if nx >= 0 and nx < size and ny >= 0 and ny < size:
-                let risk = best[y][x] + int(risks[ny][nx])
+                let risk = best[y][x] + uint16(risks[ny][nx])
                 # echo &"{nx},{ny} {risk} {best[ny][nx]}"
                 if risk < best[ny][nx]:
                     best[ny][nx] = risk
                     q.addLast((nx, ny))
-    return best[size-1][size-1]
+    return int(best[size-1][size-1])
 
 proc solve*(input: string): Answer =
     var small: seq[seq[uint8]]
