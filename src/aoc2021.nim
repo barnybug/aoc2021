@@ -53,6 +53,7 @@ when isMainModule:
   else:
     params.map(parseInt).toSeq
   
+  var total: float
   for day in days:
     echo fmt"Day {day}:"
     let input = fmt"input{day:02}.txt"
@@ -61,4 +62,8 @@ when isMainModule:
     let finish = cpuTime()
     echo result
     let took = (finish-start)*1000
+    total += took
     echo fmt" Time: {took:.2f} ms"
+
+  echo "-----------------------------------------------------"
+  echo fmt"Total time: {total:.2f} ms"
