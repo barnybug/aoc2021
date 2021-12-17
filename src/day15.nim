@@ -1,6 +1,10 @@
-import common, deques, sequtils, strformat
+import common, heapqueue, sequtils, strformat
 
-type Point = (int, int)
+type Item = object
+    risk: uint16
+    x, y: int
+
+proc `<`(a, b: Item): bool = a.risk < b.risk
 
 proc compute(risks: seq[seq[uint8]]): int =
     var best: seq[seq[uint16]]
@@ -9,18 +13,18 @@ proc compute(risks: seq[seq[uint8]]): int =
 
     let size = risks.len
     best[0][0] = 0
-    var q: Deque[Point]
-    q.addLast((0, 0))
+    var q = initHeapQueue[Item]()
+    q.push(Item(risk: 0, x: 0, y: 0))
     while q.len > 0:
-        let (x, y) = q.popFirst()
+        let item = q.pop()
         for (dx, dy) in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            let (nx, ny) = (x+dx, y+dy)
+            let (nx, ny) = (item.x+dx, item.y+dy)
             if nx >= 0 and nx < size and ny >= 0 and ny < size:
-                let risk = best[y][x] + uint16(risks[ny][nx])
+                let risk = item.risk + uint16(risks[ny][nx])
                 # echo &"{nx},{ny} {risk} {best[ny][nx]}"
                 if risk < best[ny][nx]:
                     best[ny][nx] = risk
-                    q.addLast((nx, ny))
+                    q.push(Item(risk: risk, x: nx, y: ny))
     return int(best[size-1][size-1])
 
 proc solve*(input: string): Answer =
