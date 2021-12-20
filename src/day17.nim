@@ -1,4 +1,4 @@
-import common, strscans, strformat
+import common, strscans
 
 # vi = sum(0, n, v0-i)
 # yi = sum(0, n, y(i-1)+vi)

@@ -1,4 +1,4 @@
-import common, heapqueue, sequtils, strformat
+import common, heapqueue, sequtils
 
 type Item = object
     risk: uint16
