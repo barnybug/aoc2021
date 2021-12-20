@@ -1,44 +1,37 @@
-import common, sequtils, sets
+import common, sequtils
 
-type Point = (int, int)
+const size = 100 * 2
+const offset = 50
+
+type Grid[N: static[int]] = array[N, array[N, bool]]
+
+proc sum(grid: Grid): int =
+    for row in grid:
+        for x in row:
+            if x: inc result
 
 proc solve*(input: string): Answer =
     let lines = toSeq(input.lines)
     let lookup = lines[0]
-    var grid: HashSet[Point]
+    var grid: Grid[size]
     for y, line in lines[2..^1]:
         for x, c in line:
             if c == '#':
-                grid.incl (x, y)
+                grid[y+offset][x+offset] = true
 
-    var minx = 0
-    var maxx = grid.mapIt(it[0]).max
-    var miny = 0
-    var maxy = grid.mapIt(it[1]).max
-
-    var default = 0
+    var next: Grid[size]
     for i in 1..50:
-        var next: HashSet[Point]
-        for y in (miny-1)..(maxy+1):
-            for x in (minx-1)..(maxx+1):
+        for y in 0..<size:
+            for x in 0..<size:
                 var l = 0
                 for (dx, dy) in [(-1, -1), (0, -1), (1, -1), (-1, 0), (0, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]:
-                    let v = if x+dx < minx or x+dx > maxx or y+dy < miny or y+dy > maxy: default
-                    elif (x+dx, y+dy) in grid: 1
-                    else: 0
-                    l = l shl 1 + v
+                    let nx = min(max(x+dx, 0), size-1)
+                    let ny = min(max(y+dy, 0), size-1)
+                    l = l shl 1 + int(grid[ny][nx])
 
-                if lookup[l] == '#':
-                    next.incl (x,y)
+                next[y][x] = (lookup[l] == '#')
         grid = next
-        dec minx
-        dec miny
-        inc maxx
-        inc maxy
-
-        if lookup[0] == '#':
-            default = 1-default
         if i == 2:
-            result.part1 = grid.len
+            result.part1 = grid.sum
         elif i == 50:
-            result.part2 = grid.len
+            result.part2 = grid.sum
