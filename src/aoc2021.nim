@@ -1,5 +1,5 @@
 import algorithm, common, os, sequtils, strformat, strutils, tables, times
-import day01, day02, day03, day04, day05, day06, day06, day06, day07, day08, day09, day10, day11, day12, day13, day14, day15, day16, day17, day18, day19, day20, day21, day22, day23, day23, day24
+import day01, day02, day03, day04, day05, day06, day06, day06, day07, day08, day09, day10, day11, day12, day13, day14, day15, day16, day17, day18, day19, day20, day21, day22, day23, day23, day24, day25, day25
 
 var SOLUTIONS*: Table[int, proc (input: string): Answer]
 
@@ -27,8 +27,12 @@ SOLUTIONS[21] = day21.solve
 SOLUTIONS[22] = day22.solve
 SOLUTIONS[23] = day23.solve
 SOLUTIONS[24] = day24.solve
+SOLUTIONS[25] = day25.solve
+SOLUTIONS[25] = day25.solve
 SOLUTIONS[23] = day23.solve
 SOLUTIONS[24] = day24.solve
+SOLUTIONS[25] = day25.solve
+SOLUTIONS[25] = day25.solve
 SOLUTIONS[6] = day06.solve
 SOLUTIONS[7] = day07.solve
 SOLUTIONS[8] = day08.solve
@@ -48,8 +52,12 @@ SOLUTIONS[21] = day21.solve
 SOLUTIONS[22] = day22.solve
 SOLUTIONS[23] = day23.solve
 SOLUTIONS[24] = day24.solve
+SOLUTIONS[25] = day25.solve
+SOLUTIONS[25] = day25.solve
 SOLUTIONS[23] = day23.solve
 SOLUTIONS[24] = day24.solve
+SOLUTIONS[25] = day25.solve
+SOLUTIONS[25] = day25.solve
 SOLUTIONS[6] = day06.solve
 SOLUTIONS[7] = day07.solve
 SOLUTIONS[8] = day08.solve
@@ -69,8 +77,12 @@ SOLUTIONS[21] = day21.solve
 SOLUTIONS[22] = day22.solve
 SOLUTIONS[23] = day23.solve
 SOLUTIONS[24] = day24.solve
+SOLUTIONS[25] = day25.solve
+SOLUTIONS[25] = day25.solve
 SOLUTIONS[23] = day23.solve
 SOLUTIONS[24] = day24.solve
+SOLUTIONS[25] = day25.solve
+SOLUTIONS[25] = day25.solve
 
 when isMainModule:
   let params = os.commandLineParams()
