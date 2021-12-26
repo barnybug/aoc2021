@@ -1,169 +1,177 @@
-import common, heapqueue, sequtils, strformat, tables
+import common, hashes, heapqueue, sequtils, strformat, strutils, tables
 
 #############
-#89.0.1.2.34#
-###1#3#5#7###
-# #0#2#4#6#
+#01.2.3.4.56#
+###0#1#2#3###
+# #0#1#2#3#
 # #########
-type State = array[15, char]
+type Pod = enum A = 0, B = 1 , C = 2, D = 3, Empty = 4, Wall = 5
+type State = object
+    hall: array[7, Pod]
+    rooms: array[4,array[4, Pod]]
+
+proc hash(s: State): Hash = hash(s.hall) !& hash(s.rooms)
 
 proc parse(input: string): State =
-    let lines = input.readLines(4)
-    result[0] = lines[3][3]
-    result[1] = lines[2][3]
-    result[2] = lines[3][5]
-    result[3] = lines[2][5]
-    result[4] = lines[3][7]
-    result[5] = lines[2][7]
-    result[6] = lines[3][9]
-    result[7] = lines[2][9]
+    let lines = toSeq(input.lines)
+    for i in result.hall.mitems: i = Empty
+    for i in 0..3:
+        for j in 0..3:
+            let y = if j+2 > lines.high: j + 1 else: j + 2
+            result.rooms[i][j] = case lines[y][i*2+3]
+            of 'A': A
+            of 'B': B
+            of 'C': C
+            of 'D': D
+            of '.': Empty
+            else: Wall
 
 proc `$`(state: State): string =
-    let s = state.mapIt(if it == '\0': '.' else: it)
-    return &"#############\n#{s[8]}{s[9]}.{s[10]}.{s[11]}.{s[12]}.{s[13]}{s[14]}#\n###{s[1]}#{s[3]}#{s[5]}#{s[7]}###\n  #{s[0]}#{s[2]}#{s[4]}#{s[6]}#\n  #########"
+    let h = state.hall
+    let r = state.rooms
+    result = &"#############\n#{h[0]}{h[1]}.{h[2]}.{h[3]}.{h[4]}.{h[5]}{h[6]}#\n"
+    for i in 0..3:
+        if r[0][i] == Wall: break
+        result &= &"  #{r[0][i]}#{r[1][i]}#{r[2][i]}#{r[3][i]}#\n"
+    result &= "  #########"
+    result = result.replace("Empty", ".")
 
-let target = ['A','A','B','B','C','C','D','D']
-
-proc weight(c: char): int =
-    case c
-    of 'A': 1
-    of 'B': 10
-    of 'C': 100
+proc weight(p: Pod): int =
+    case p
+    of A: 1
+    of B: 10
+    of C: 100
     else: 1000
 
-proc complete(s: State): bool =
-    s[0..7] == target
-
-let costs = [[4,3,3,5,7,9,10],[3,2,2,4,6,8,9],
-    [6,5,3,3,5,7,8],[5,4,2,2,4,6,7],
-    [8,7,5,3,3,5,6],[7,6,4,2,2,4,5],
-    [10,9,7,5,3,3,4],[9,8,6,4,2,2,3]]
+proc complete(state: State): bool =
+    for i, room in state.rooms:
+        for j in room:
+            if j == Wall:
+                break
+            if j != Pod(i):
+                return false
+    return true
 
 type Item = tuple[state: State, cost: int]
 
 proc `<`(a, b: Item): bool = a.cost < b.cost
 
-proc solve*(input: string): Answer =
+proc ready(room: array[4, Pod], p: Pod): bool = room.allIt(it == Empty or it == Wall or it == p)
+
+proc top(room: array[4, Pod]): (Pod, int) = 
+    for i in 0..3:
+        if room[i] != Empty and room[i] != Wall: return (room[i], i)
+
+proc add(room: var array[4, Pod], c: Pod): int =
+    for i in countdown(3, 0):
+        if room[i] != Empty: continue
+        room[i] = c
+        return i
+
+let hall_to_room_steps = [[2,4,6,8], [1,3,5,7], [1,1,3,5], [3,1,1,3], [5,3,1,1], [7,5,3,1], [8,6,4,2]]
+
+proc compute(input: string): int =
     let initial = input.parse
     var q = initHeapQueue[Item]()
     var memo: Table[State, int]
     q.push((initial, 0))
     var best = 99999999
     while q.len > 0:
-        let (s, cost) = q.pop()
-        if s in memo and memo[s] < cost: continue
+        var (state, cost) = q.pop()
+        if state in memo and memo[state] < cost: continue
 
-        var done = false
-
-        # move from hallway
-        for i in 8..14:
-            let c = s[i]
-            if c == '\0':
-                continue # nothing
-
-            if i == 8 and s[9] != '\0': continue
-            if i == 14 and s[13] != '\0': continue
-
-            let t = if c == 'A': [0, 1]
-            elif c == 'B': [2, 3]
-            elif c == 'C': [4, 5]
-            else: [6, 7]
-            for j in t:
-                if s[j] != '\0': continue # occupied
-                let bottom = (j mod 2) == 0
-                if not bottom:
-                    if s[j-1] == '\0': continue # don't move to top if bottom empty
-                    if s[j-1] != c: continue # don't move into one occupied by different
-                #############
-                #89.0.1.2.34#
-                ###1#3#5#7###
-                # #0#2#4#6#
-                # #########
-                if i < 10 and j > 1 and s[10] != '\0': continue
-                if i < 11 and j > 3 and s[11] != '\0': continue
-                if i < 12 and j > 5 and s[12] != '\0': continue
-
-                if i > 12 and j < 6 and s[12] != '\0': continue
-                if i > 11 and j < 4 and s[11] != '\0': continue
-                if i > 10 and j < 2 and s[10] != '\0': continue
-
-                # Valid move!
-                let ncost = cost + costs[j][i-8]*weight(c)
-
-                var ns = s
-                ns[j] = ns[i]
-                ns[i] = '\0'
-                if ncost >= best:
+        # first move everything from hallway to final that's possible (always min)
+        var check = true
+        while check:
+            check = false
+            for h, c in state.hall:
+                if c == Empty: continue
+                let r = int(c)
+                if not ready(state.rooms[r], c):
                     continue
-                if ns.complete:
-                    best = ncost
-                else:
-                    if memo.getOrDefault(ns, 99999) > ncost:
-                        memo[ns] = ncost
-                        q.push (ns, ncost)
-                done = true
-                break
-
-        if done:
-            continue
-
-        # move from room
-        for i in 0..7:
-            let c = s[i]
-            if c == '\0':
-                continue # nothing
-            let bottom = (i mod 2) == 0
-            if bottom:
-                if c == target[i]:
-                    continue # finished
-                if s[i+1] != '\0':
-                    continue # blocked by one above
-            else:
-                if c == target[i] and s[i-1] == target[i]:
-                    continue # finished (not blocking another under)
-            # Good to move, where to...
-            #############
-            #89.0.1.2.34#
-            ###1#3#5#7###
-            # #0#2#4#6#
-            # #########
-            for j in 8..14:
-                if s[j] != '\0': continue # occupied
-                if j == 8 or j == 9:
-                    # left hallway
-                    if j == 8 and s[9] != '\0': continue
-                    if i > 1 and s[10] != '\0': continue
-                    if i > 3 and s[11] != '\0': continue
-                    if i > 5 and s[12] != '\0': continue
-                elif j == 10:
-                    # 1st hallway
-                    if i > 3 and s[11] != '\0': continue
-                    if i > 5 and s[12] != '\0': continue
-                elif j == 11:
-                    # 2nd hallway
-                    if i < 2 and s[10] != '\0': continue
-                    if i > 5 and s[12] != '\0': continue
-                elif j == 12:
-                    # 3rd hallway
-                    if i < 2 and s[10] != '\0': continue
-                    if i < 4 and s[11] != '\0': continue
-                elif j == 13 or j == 14:
-                    # right hallway
-                    if j == 14 and s[13] != '\0': continue
-                    if i < 6 and s[12] != '\0': continue
-                    if i < 4 and s[11] != '\0': continue
-                    if i < 2 and s[10] != '\0': continue
+                var clear = true
+                if h-r < 2: # moving right
+                    for j in (h+1)..(r+1):
+                        if state.hall[j] != Empty:
+                            clear = false
+                            break
+                else: # moving left
+                    for j in (r+2)..(h-1):
+                        if state.hall[j] != Empty:
+                            clear = false
+                            break
+                if not clear:
+                    continue
+                # move
+                # echo state
+                # echo "valid ", h, "->", r
+                state.hall[h] = Empty
+                let at = add(state.rooms[r], c)
+                # echo state
+                #############
+                #01.2.3.4.56#
+                ###0#1#2#3###
+                # #0#1#2#3#
+                # #########
+                # let x = (hall_to_room_steps[h][r] + at + 1) * weight(c)
+                # echo hall_to_room_steps[h][r]
+                # echo at
+                # echo "cost: ", x
+                cost += (hall_to_room_steps[h][r] + at + 1) * weight(c)
                 
-                # Valid move!
-                let ncost = cost + costs[i][j-8]*weight(c)
-                var ns = s
-                ns[j] = ns[i]
-                ns[i] = '\0'
-                if ncost >= best:
+                check = true # rerun
+
+        # check for completion
+        if state.complete:
+            if cost < best:
+                best = cost
+            continue # next in deque
+
+        # necessary?
+        if memo.getOrDefault(state, 99999) > cost:
+            memo[state] = cost
+
+        # moves from room to hall
+        # echo state
+        for r in 0..3:
+            # echo "r", r
+            let pod = Pod(r)
+            if ready(state.rooms[r], pod):
+                continue
+            let (c, at) = top(state.rooms[r])
+            # echo "c", c, "at", at
+            for h in 0..6:
+                # echo "h", h
+                var clear = true
+                if h-r >= 2: # moving right
+                    for j in (r+2)..h:
+                        if state.hall[j] != Empty:
+                            clear = false
+                            break
+                else: # moving left
+                    for j in h..(r+1):
+                        if state.hall[j] != Empty:
+                            clear = false
+                            break
+                if not clear:
+                    continue
+                # Valid move -> room to hall
+                let ncost = cost + (hall_to_room_steps[h][r] + at + 1) * weight(c)
+                var ns = state
+                ns.hall[h] = c
+                ns.rooms[r][at] = Empty
+                # echo state
+                # echo "valid: ", r, "->", h
+                # echo ns
+                # echo "cost: ", cost, "->", ncost
+                if ncost >= best: # no point exploring - worse than best completed
                     continue
                 if memo.getOrDefault(ns, 99999) > ncost:
                     memo[ns] = ncost
                     q.push (ns, ncost)
+    return best
 
-    result.part1 = best
-    result.part2 = 0
+proc solve*(input: string): Answer =
+    
+    result.part1 = compute(input)
+    result.part2 = compute("input23b.txt")
