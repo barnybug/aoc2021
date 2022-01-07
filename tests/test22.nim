@@ -3,8 +3,8 @@ import day22
 
 suite "day 22":
   test "part 1":
-    let answer = day22.part1("tests/test22.txt")
-    check answer == 590784
+    let answer = day22.solve("tests/test22.txt")
+    check answer.part1 == 590784
 
   test "overlap":
     let c1 = (1, 2, 3, 4, 5, 6)
@@ -44,5 +44,5 @@ suite "day 22":
     check (c1 - c2).len == 26
 
   test "part 2":
-    let answer = day22.part2("tests/test22b.txt")
-    check answer == 2758514936282235
+    let answer = day22.solve("tests/test22b.txt")
+    check answer.part2 == 2758514936282235
